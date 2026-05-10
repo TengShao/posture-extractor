@@ -30,7 +30,7 @@ $posture-generator path/to/image
 Send this to an agent that can install local skills:
 
 ```text
-Install the skill from https://github.com/TengShao/Posture-Generator and keep the installed skill name as posture-generator.
+Install the skill from https://github.com/TengShao/posture-penerator and keep the installed skill name as posture-generator.
 ```
 
 ---
@@ -67,5 +67,5 @@ $posture-generator path/to/image
 把下面这段话发送给支持安装本地 skill 的 agent：
 
 ```text
-请从 https://github.com/TengShao/Posture-Generator 安装这个 skill，并保持安装后的 skill 名称为 posture-generator。
+请从 https://github.com/TengShao/posture-penerator 安装这个 skill，并保持安装后的 skill 名称为 posture-generator。
 ```
