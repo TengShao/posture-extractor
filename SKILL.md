@@ -29,7 +29,7 @@ If an image contains multiple people, use the primary/most central subject unles
 - Pose image size: `1024x1024`.
 - Framing: full body, with no cropped head, hands, feet, limbs, or props.
 - Model style: clean white model silhouette only.
-- Also output a concise pose description suitable for AIGC image-generation prompts.
+- Also output concise bilingual pose descriptions suitable for AIGC image-generation prompts, with both Chinese and English versions.
 
 ## Workflow
 
@@ -76,7 +76,7 @@ During batch processing, report progress before starting each image. Use the cur
 
 Save every batch output under `posture/`. Use stable filenames derived from each input filename, such as `<input-stem>-posture.png`. If a filename already exists, create a non-destructive sibling filename such as `<input-stem>-posture-2.png`.
 
-For each processed image, send or summarize the generated pose image, report its saved path, and provide its pose prompt text. Keep the output order aligned with the input order.
+For each processed image, send or summarize the generated pose image, report its saved path, and provide its bilingual pose prompt text. Keep the output order aligned with the input order.
 
 ## Image Generation Constraints
 
@@ -100,24 +100,30 @@ Create a 1024x1024 image showing the [male/female] white mannequin from the prov
 
 ## AIGC Pose Description
 
-Return a short prompt-friendly description after the image is sent to the conversation, saved under `posture/`, and the user has been told where the image was saved. Focus on pose mechanics rather than character identity or styling.
+Return short prompt-friendly descriptions after the image is sent to the conversation, saved under `posture/`, and the user has been told where the image was saved. Focus on pose mechanics rather than character identity or styling.
 
-Use the current conversation language for the section labels. Keep this structure:
+The pose prompt output must be bilingual. Always provide both Chinese and English versions, regardless of the current conversation language. Keep the two versions semantically aligned and equally complete. Use the current conversation language for any surrounding delivery text, but keep this prompt block structure:
 
 ```text
-<localized label meaning "The following can be used as an image-generation prompt:">
-<pose description>
+可用于图片生成的提示词：
+<Chinese pose description>
 
-<localized label meaning "Keywords:">
-<keyword 1>, <keyword 2>, <keyword n>
+关键词：
+<Chinese keyword 1>, <Chinese keyword 2>, <Chinese keyword n>
+
+Image-generation prompt:
+<English pose description>
+
+Keywords:
+<English keyword 1>, <English keyword 2>, <English keyword n>
 ```
 
 Avoid mentioning clothing, hairstyle, facial likeness, accessories, background, or any visual detail that should not transfer.
 
-For `<pose description>`, describe the pose in one compact paragraph, such as:
+For both `<Chinese pose description>` and `<English pose description>`, describe the pose in one compact paragraph, such as:
 
 ```text
 Full-body [male/female] figure pose: [stance/action], head [direction/tilt], torso [angle/rotation], left arm [position], right arm [position], left leg [position], right leg [position], weight balanced on [support point], [gesture mood/energy].
 ```
 
-For `<keyword 1>, <keyword 2>, <keyword n>`, provide concise pose keywords only, such as action type, body orientation, arm placement, leg placement, balance, and gesture energy.
+For each keyword line, provide concise pose keywords only, such as action type, body orientation, arm placement, leg placement, balance, and gesture energy. The Chinese keywords and English keywords should describe the same pose mechanics.
