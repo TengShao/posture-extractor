@@ -44,8 +44,10 @@ If the image contains multiple people, use the primary/most central subject unle
    - The alpha channel must contain transparent pixels outside the mannequin.
    - A checkerboard transparency preview, solid color background, or any visible background is invalid.
 7. If validation fails, reject the image and regenerate or re-edit until the generation/editing model directly outputs a valid transparent PNG. Do not repair the image by local background removal, chroma key removal, matting, or cutout post-processing.
-8. Send the validated generated pose image to the conversation. If the conversation does not support image output, create `posture/` in the current working directory and save the PNG there.
-9. After the image is delivered or saved, provide the pose prompt text in the required format below.
+8. Send the validated generated pose image to the conversation.
+9. Also create `posture/` in the current working directory and save the PNG there.
+10. Tell the user exactly: `图片已存至：<path/to/image>`, replacing `<path/to/image>` with the saved image path.
+11. After the image is delivered and saved, provide the pose prompt text in the required format below.
 
 ## Image Generation Constraints
 
@@ -69,7 +71,7 @@ Create a transparent-background PNG, 1024x1024, showing the [male/female] white 
 
 ## AIGC Pose Description
 
-Return a short prompt-friendly description after the image is sent to the conversation or saved under `posture/`. Focus on pose mechanics rather than character identity or styling.
+Return a short prompt-friendly description after the image is sent to the conversation, saved under `posture/`, and the user has been told `图片已存至：<path/to/image>`. Focus on pose mechanics rather than character identity or styling.
 
 Use this exact response format:
 
