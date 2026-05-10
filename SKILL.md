@@ -55,7 +55,7 @@ If the image contains multiple people, use the primary/most central subject unle
 9. If validation fails, reject the image and regenerate or re-edit until the generation/editing model directly outputs a valid transparent PNG. Do not repair the image by local background removal, chroma key removal, matting, or cutout post-processing.
 10. Send the validated generated pose image to the conversation.
 11. Also create `posture/` in the current working directory and save the PNG there.
-12. Tell the user exactly: `图片已存至：<path/to/image>`, replacing `<path/to/image>` with the saved image path.
+12. Tell the user that the image has been saved to `<path/to/image>`, replacing `<path/to/image>` with the saved image path and using the current conversation language.
 13. After the image is delivered and saved, provide the pose prompt text in the required format below.
 
 ## Image Generation Constraints
@@ -80,24 +80,24 @@ Create a transparent-background PNG, 1024x1024, showing the [male/female] white 
 
 ## AIGC Pose Description
 
-Return a short prompt-friendly description after the image is sent to the conversation, saved under `posture/`, and the user has been told `图片已存至：<path/to/image>`. Focus on pose mechanics rather than character identity or styling.
+Return a short prompt-friendly description after the image is sent to the conversation, saved under `posture/`, and the user has been told where the image was saved. Focus on pose mechanics rather than character identity or styling.
 
-Use this exact response format:
+Use the current conversation language for the section labels. Keep this structure:
 
 ```text
-以下内容可作为图片生成的提示词：
-<对姿态的描写>
+<localized label meaning "The following can be used as an image-generation prompt:">
+<pose description>
 
-关键词：
-<关键词1>, <关键词2>, <关键词n>
+<localized label meaning "Keywords:">
+<keyword 1>, <keyword 2>, <keyword n>
 ```
 
 Avoid mentioning clothing, hairstyle, facial likeness, accessories, background, or any visual detail that should not transfer.
 
-For `<对姿态的描写>`, describe the pose in one compact paragraph, such as:
+For `<pose description>`, describe the pose in one compact paragraph, such as:
 
 ```text
 Full-body [male/female] figure pose: [stance/action], head [direction/tilt], torso [angle/rotation], left arm [position], right arm [position], left leg [position], right leg [position], weight balanced on [support point], [gesture mood/energy].
 ```
 
-For `<关键词1>, <关键词2>, <关键词n>`, provide concise pose keywords only, such as action type, body orientation, arm placement, leg placement, balance, and gesture energy.
+For `<keyword 1>, <keyword 2>, <keyword n>`, provide concise pose keywords only, such as action type, body orientation, arm placement, leg placement, balance, and gesture energy.
