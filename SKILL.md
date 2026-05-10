@@ -38,7 +38,7 @@ If an image contains multiple people, use the primary/most central subject unles
    - If the user provided `/posture-generator path/to/image`, resolve and load the provided path(s).
    - If a provided path is a directory, collect all supported image files inside it and ask for confirmation before processing.
    - If both uploaded images and paths are present, use uploaded images unless the user explicitly says to use the paths too.
-2. Prefer an image generation or editing API/tool that supports explicit output parameters. Set `background: transparent`, `output_format: png`, `size: 1024x1024`, and `quality: high` when those parameters are available. If the active tool only accepts a prompt, state that the file requirements will be enforced by validation and regeneration.
+2. Prefer an image generation or editing API/tool that can preserve the selected white-model template. Do not request native alpha or transparent output from the generation model. Generate a normal `1024x1024` image first, using a flat, solid, high-saturation background with strong color contrast against the white mannequin, such as bright green or bright blue. Avoid white, off-white, gray, beige, low-saturation colors, gradients, shadows, textures, or scenery in the background.
 3. If there are multiple reference images, process each image independently and preserve input order in outputs and prompt descriptions.
 4. Inspect the current reference image.
 5. Identify the subject's apparent gender presentation for template selection:
@@ -51,18 +51,14 @@ If an image contains multiple people, use the primary/most central subject unles
    - shoulder and hip rotation
    - arm, hand, leg, and foot placement
    - weight distribution and gesture energy
-7. Generate or edit the selected white model template so it matches the reference pose.
-8. Export a transparent PNG at `1024x1024`.
-9. Validate the exported file before delivery:
+7. Generate or edit the selected white model template so it matches the reference pose on the removable high-contrast solid-color background.
+8. Post-process the generated image by removing the background, using background removal, chroma-key removal, matting, or local cutout tools. Export the result as a transparent PNG at `1024x1024`.
+9. Validate the cutout PNG before delivery:
    - The file must be a real `RGBA` PNG, not `RGB`.
    - The alpha channel must contain transparent pixels outside the mannequin.
    - A checkerboard transparency preview, solid color background, or any visible background is invalid.
-10. If native transparent output validation fails, try regenerating or re-editing for native transparency first.
-11. If native transparent output still fails after reasonable attempts, fall back to post-processing transparency:
-   - Prefer a flat chroma-key background workflow when possible.
-   - Use background removal, chroma-key removal, matting, or local cutout tools only as fallback.
-   - Re-run validation after fallback processing; the final delivered file must still be a real `RGBA` PNG with transparent pixels outside the mannequin.
-   - If fallback processing creates messy edges, color fringe, missing body parts, or altered mannequin appearance, reject the result and try again.
+10. If cutout validation fails, retry the post-processing step first.
+11. If post-processing repeatedly creates messy edges, color fringe, missing body parts, or altered mannequin appearance, regenerate the source image with a cleaner solid-color background that is farther from the mannequin's white/gray tones, then cut it out again.
 12. Send the validated generated pose image to the conversation.
 13. Also create `posture/` in the current working directory and save the PNG there.
 14. Tell the user that the image has been saved to `<path/to/image>`, replacing `<path/to/image>` with the saved image path and using the current conversation language.
@@ -92,14 +88,14 @@ The output must be only a clean full-body white model in the extracted pose, iso
 
 The transparent background must be real file transparency in the final delivered file. The delivered PNG must contain an alpha channel with transparent pixels outside the mannequin. Do not draw, simulate, or bake in a checkerboard transparency preview.
 
-Native transparent output is preferred. If native transparency fails validation after reasonable attempts, fallback post-processing is allowed. The fallback may use background removal, chroma-key removal, matting, or local cutout tools, but the final file must pass the same `RGBA`, alpha transparency, clean contour, full-body, and template-preservation checks before delivery.
+Native transparent output is not the default strategy. Generate the posed white model on a removable solid-color background first, choosing a color with large visual distance from the mannequin's white/gray tones, then cut out the background in post-processing. The final file must pass the same `RGBA`, alpha transparency, clean contour, full-body, and template-preservation checks before delivery.
 
 ## Prompt Pattern
 
 When calling an image generation or image editing model, include the user image as the pose reference and the selected template as the identity/style reference. Use a prompt like:
 
 ```text
-Create a transparent-background PNG, 1024x1024, showing the [male/female] white mannequin from the provided template matching only the body pose of the reference subject. Prefer native true transparency: the output file itself should contain a real alpha channel, with pixels outside the mannequin transparent in the PNG file. Do not render a checkerboard transparency preview. Preserve the mannequin's original body proportions, including shoulder width, waist-to-hip ratio, torso length, arm length, leg length, and overall build. Preserve the mannequin's original white material, lighting, color, and clean contour. Full body visible, no cropped head, hands, feet, or limbs. Do not copy clothing, hair, accessories, facial details, physique, props, background, scenery, text, or any unrelated detail. Output only the posed white model on true transparency.
+Create a 1024x1024 image showing the [male/female] white mannequin from the provided template matching only the body pose of the reference subject. Do not generate native alpha or transparent output. Place the mannequin on a flat, solid, high-saturation background with strong color contrast against the white mannequin, such as bright green or bright blue, so it can be removed precisely in post-processing. The background must not be white, off-white, gray, beige, low-saturation, gradient, shadowed, textured, scenic, or checkerboard. Preserve the mannequin's original body proportions, including shoulder width, waist-to-hip ratio, torso length, arm length, leg length, and overall build. Preserve the mannequin's original white material, lighting, color, and clean contour. Full body visible, no cropped head, hands, feet, or limbs. Do not copy clothing, hair, accessories, facial details, physique, props, scenery, text, or any unrelated detail. Output only the posed white model on the removable solid-color background; the background will be cut out after generation.
 ```
 
 ## AIGC Pose Description

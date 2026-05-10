@@ -1,7 +1,7 @@
 interface:
   display_name: "Posture Generator"
   short_description: "Generate clean white-model pose PNGs"
-  default_prompt: "Use $posture-generator to create a transparent white-model pose PNG from this reference image."
+  default_prompt: "Use $posture-generator to create a cutout transparent white-model pose PNG from this reference image."
 
 policy:
   allow_implicit_invocation: true
