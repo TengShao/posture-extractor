@@ -16,6 +16,15 @@ template/
 
 `female.png` is used for female-presenting subjects, and `male.png` is used for male-presenting subjects.
 
+## Usage
+
+Provide an image directly, or pass an image path when invoking the skill. Codex uses `$posture-generator`; Openclaw, Hermes Agent, and Claude Code use `/posture-generator`.
+
+```text
+$posture-generator path/to/image
+/posture-generator path/to/image
+```
+
 ## Installation
 
 Send this to an agent that can install local skills:
@@ -23,8 +32,6 @@ Send this to an agent that can install local skills:
 ```text
 Install the skill from https://github.com/TengShao/Posture-Generator and keep the installed skill name as posture-generator.
 ```
-
-Restart the agent application after installation. In Codex, invoke it with `$posture-generator`.
 
 ---
 
@@ -46,6 +53,15 @@ template/
 
 `female.png` 用于女性主体，`male.png` 用于男性主体。
 
+## 使用方式
+
+可以直接上传图片，也可以在唤醒 skill 时传入图片路径。Codex 使用 `$posture-generator`；Openclaw、Hermes Agent、Claude Code 使用 `/posture-generator`。
+
+```text
+$posture-generator path/to/image
+/posture-generator path/to/image
+```
+
 ## 安装
 
 把下面这段话发送给支持安装本地 skill 的 agent：
@@ -53,5 +69,3 @@ template/
 ```text
 请从 https://github.com/TengShao/Posture-Generator 安装这个 skill，并保持安装后的 skill 名称为 posture-generator。
 ```
-
-安装后重启对应的 agent 应用。在 Codex 中，可以通过 `$posture-generator` 调用。
