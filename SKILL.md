@@ -28,7 +28,7 @@ If an image contains multiple people, use the primary/most central subject unles
 - Pose image format: transparent-background `.png`.
 - Pose image size: `1024x1024`.
 - Framing: full body, with no cropped head, hands, feet, limbs, or props.
-- Model style: clean white model silhouette only.
+- Model style: clean white model silhouette only, with a slightly strengthened contour for reliable cutout and readability.
 - Also output concise bilingual pose descriptions suitable for AIGC image-generation prompts, with both Chinese and English versions.
 
 ## Workflow
@@ -38,7 +38,7 @@ If an image contains multiple people, use the primary/most central subject unles
    - If the user provided `/posture-generator path/to/image`, resolve and load the provided path(s).
    - If a provided path is a directory, collect all supported image files inside it and ask for confirmation before processing.
    - If both uploaded images and paths are present, use uploaded images unless the user explicitly says to use the paths too.
-2. Prefer an image generation or editing API/tool that can preserve the selected white-model template. Do not request native alpha or transparent output from the generation model. Generate a normal `1024x1024` image first, using a flat, solid, high-saturation background with strong color contrast against the white mannequin, such as bright green or bright blue. Avoid white, off-white, gray, beige, low-saturation colors, gradients, shadows, textures, or scenery in the background.
+2. Prefer an image generation or editing API/tool that can preserve the selected white-model template. Do not request native alpha or transparent output from the generation model. Generate a normal `1024x1024` image first, using a flat, solid, high-saturation background with strong color contrast against the white mannequin, such as bright green or bright blue. Avoid white, off-white, gray, beige, low-saturation colors, gradients, shadows, textures, or scenery in the background. Slightly strengthen the mannequin's readable contour with a thin, soft, neutral gray edge or shading transition so the body boundary remains easy to separate from the background; avoid a thick black, cartoon, inked, or decorative outline.
 3. If there are multiple reference images, process each image independently and preserve input order in outputs and prompt descriptions.
 4. Inspect the current reference image.
 5. Identify the subject's apparent gender presentation for template selection:
@@ -52,13 +52,14 @@ If an image contains multiple people, use the primary/most central subject unles
    - arm, hand, leg, and foot placement
    - weight distribution and gesture energy
 7. Generate or edit the selected white model template so it matches the reference pose on the removable high-contrast solid-color background.
-8. Post-process the generated image by removing the background, using background removal, chroma-key removal, matting, or local cutout tools. Export the result as a transparent PNG at `1024x1024`.
+8. Post-process the generated image by removing the background, using background removal, chroma-key removal, matting, or local cutout tools. Remove visible color spill from the solid background, preserve the strengthened white-model contour, and anti-alias the alpha edge so the final silhouette is smooth rather than jagged. When using local cutout tools, prefer high-resolution or supersampled matting, then downsample cleanly to `1024x1024`. Export the result as a transparent PNG at `1024x1024`.
 9. Validate the cutout PNG before delivery:
    - The file must be a real `RGBA` PNG, not `RGB`.
    - The alpha channel must contain transparent pixels outside the mannequin.
+   - The mannequin edge should be smooth and anti-aliased, with no stair-step jaggies, harsh halo, or bright green/blue color fringe.
    - A checkerboard transparency preview, solid color background, or any visible background is invalid.
 10. If cutout validation fails, retry the post-processing step first.
-11. If post-processing repeatedly creates messy edges, color fringe, missing body parts, or altered mannequin appearance, regenerate the source image with a cleaner solid-color background that is farther from the mannequin's white/gray tones, then cut it out again.
+11. If post-processing repeatedly creates messy edges, stair-step jaggies, color fringe, missing body parts, or altered mannequin appearance, first retry matting with edge smoothing, decontamination, and a small alpha feather. If the edge still fails, regenerate the source image with a cleaner solid-color background that is farther from the mannequin's white/gray tones and a clearer but still subtle contour, then cut it out again.
 12. Send the validated generated pose image to the conversation.
 13. Also create `posture/` in the current working directory and save the PNG there.
 14. Tell the user that the image has been saved to `<path/to/image>`, replacing `<path/to/image>` with the saved image path and using the current conversation language.
@@ -80,27 +81,29 @@ For each processed image, send or summarize the generated pose image, report its
 
 ## Image Generation Constraints
 
-Preserve the selected white model's existing material, light, shadow, and color. Do not add texture, skin tone, clothing, hair, facial details, accessories, props, background elements, floor, scenery, text, watermark, or decorative effects.
+Preserve the selected white model's existing material, light, shadow, and color. A subtle neutral-gray contour or edge shading is allowed only to improve silhouette separation and cutout accuracy. Do not add texture, skin tone, clothing, hair, facial details, accessories, props, background elements, floor, scenery, text, watermark, or decorative effects.
 
 Do not modify the selected template's body proportions based on the uploaded image. Preserve the template's original shoulder width, waist-to-hip ratio, torso length, arm length, leg length, hand/foot scale, and overall body build. Transfer only the pose and gesture, not the reference subject's physique.
 
-The output must be only a clean full-body white model in the extracted pose, isolated on a transparent background. Keep the silhouette readable and anatomical proportions coherent. Leave enough canvas margin around the body so no body part touches or crosses the image edge.
+The output must be only a clean full-body white model in the extracted pose, isolated on a transparent background. Keep the silhouette readable, gently contoured, and anatomical proportions coherent. Leave enough canvas margin around the body so no body part touches or crosses the image edge.
 
-The transparent background must be real file transparency in the final delivered file. The delivered PNG must contain an alpha channel with transparent pixels outside the mannequin. Do not draw, simulate, or bake in a checkerboard transparency preview.
+The transparent background must be real file transparency in the final delivered file. The delivered PNG must contain an alpha channel with transparent pixels outside the mannequin. Its alpha edge should be smooth and anti-aliased, without hard stair-step pixels, obvious halos, or high-saturation color fringe from the temporary background. Do not draw, simulate, or bake in a checkerboard transparency preview.
 
-Native transparent output is not the default strategy. Generate the posed white model on a removable solid-color background first, choosing a color with large visual distance from the mannequin's white/gray tones, then cut out the background in post-processing. The final file must pass the same `RGBA`, alpha transparency, clean contour, full-body, and template-preservation checks before delivery.
+Native transparent output is not the default strategy. Generate the posed white model on a removable solid-color background first, choosing a color with large visual distance from the mannequin's white/gray tones, then cut out the background in post-processing. The final file must pass the same `RGBA`, alpha transparency, smooth anti-aliased edge, clean contour, full-body, and template-preservation checks before delivery.
 
 ## Prompt Pattern
 
 When calling an image generation or image editing model, include the user image as the pose reference and the selected template as the identity/style reference. Use a prompt like:
 
 ```text
-Create a 1024x1024 image showing the [male/female] white mannequin from the provided template matching only the body pose of the reference subject. Do not generate native alpha or transparent output. Place the mannequin on a flat, solid, high-saturation background with strong color contrast against the white mannequin, such as bright green or bright blue, so it can be removed precisely in post-processing. The background must not be white, off-white, gray, beige, low-saturation, gradient, shadowed, textured, scenic, or checkerboard. Preserve the mannequin's original body proportions, including shoulder width, waist-to-hip ratio, torso length, arm length, leg length, and overall build. Preserve the mannequin's original white material, lighting, color, and clean contour. Full body visible, no cropped head, hands, feet, or limbs. Do not copy clothing, hair, accessories, facial details, physique, props, scenery, text, or any unrelated detail. Output only the posed white model on the removable solid-color background; the background will be cut out after generation.
+Create a 1024x1024 image showing the [male/female] white mannequin from the provided template matching only the body pose of the reference subject. Do not generate native alpha or transparent output. Place the mannequin on a flat, solid, high-saturation background with strong color contrast against the white mannequin, such as bright green or bright blue, so it can be removed precisely in post-processing. The background must not be white, off-white, gray, beige, low-saturation, gradient, shadowed, textured, scenic, or checkerboard. Preserve the mannequin's original body proportions, including shoulder width, waist-to-hip ratio, torso length, arm length, leg length, and overall build. Preserve the mannequin's original white material, lighting, and color. Slightly strengthen the mannequin's outer silhouette and major limb separation contours with thin, soft, neutral-gray edge shading; keep it realistic and minimal, not a thick black cartoon or ink outline. Full body visible, no cropped head, hands, feet, or limbs. Do not copy clothing, hair, accessories, facial details, physique, props, scenery, text, or any unrelated detail. Output only the posed white model on the removable solid-color background; the background will be cut out after generation.
 ```
 
 ## AIGC Pose Description
 
 Return short prompt-friendly descriptions after the image is sent to the conversation, saved under `posture/`, and the user has been told where the image was saved. Focus on pose mechanics rather than character identity or styling.
+
+The user-facing pose prompt describes the pose only. Do not frame it as a prompt to generate another white model, mannequin, male/female template, or character identity. Do not start the Chinese description with labels like `全身女性白模姿势：`, `全身男性白模姿势：`, or similar white-model wording. Do not start the English description with labels like `Full-body female white mannequin pose:` or `Full-body male white mannequin pose:`.
 
 The pose prompt output must be bilingual. Always provide both Chinese and English versions, regardless of the current conversation language. Keep the two versions semantically aligned and equally complete. Use the current conversation language for any surrounding delivery text, but keep this prompt block structure:
 
@@ -123,7 +126,7 @@ Avoid mentioning clothing, hairstyle, facial likeness, accessories, background, 
 For both `<Chinese pose description>` and `<English pose description>`, describe the pose in one compact paragraph, such as:
 
 ```text
-Full-body [male/female] figure pose: [stance/action], head [direction/tilt], torso [angle/rotation], left arm [position], right arm [position], left leg [position], right leg [position], weight balanced on [support point], [gesture mood/energy].
+[stance/action], head [direction/tilt], torso [angle/rotation], left arm [position], right arm [position], left leg [position], right leg [position], weight balanced on [support point], [gesture mood/energy].
 ```
 
 For each keyword line, provide concise pose keywords only, such as action type, body orientation, arm placement, leg placement, balance, and gesture energy. The Chinese keywords and English keywords should describe the same pose mechanics.
