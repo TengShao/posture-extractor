@@ -3,138 +3,119 @@ name: posture-extractor
 description: Generate clean transparent-background PNGs of male or female white models matching poses from one or more user-provided character images, plus same-path Markdown files containing bilingual AIGC-ready pose prompts. Use when the user wants white mannequin/body templates to imitate reference postures while preserving template body proportions and removing clothing, hair, accessories, background, and all unrelated visual details.
 ---
 
-# 姿态提取器 (Posture Extractor)
+# Posture Extractor
 
-Use this skill when the user provides one or more images and wants a white model to copy the character poses.
+Use this skill when the user provides one or more person or character images and wants a white model to copy only the body pose.
 
 ## Inputs
 
-- User reference image(s) containing a person or character, provided as uploaded image attachment(s), image file path(s), or a directory path in text.
+- Reference image(s), provided as uploaded image attachments, image file paths, or a directory path.
 - Path-style invocation is supported, for example: `/posture-extractor path/to/image`.
-  - Treat path arguments after `/posture-extractor` as reference image paths or directory paths.
   - Resolve relative paths from the current working directory.
-  - If a path does not exist, ask the user for a valid image path or directory path.
-  - If a path is a directory, collect all supported image files inside it for batch processing and ask for confirmation before generating.
-- White model templates in `template/`:
+  - If a path does not exist, ask for a valid image or directory path.
+  - If a path is a directory, collect supported image files and ask for confirmation before generating.
+- White model templates:
   - `template/male.png`
   - `template/female.png`
 
-Supported image file extensions include `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.bmp`, and `.tiff`.
+Supported image extensions: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.bmp`, `.tiff`.
 
-If an image contains multiple people, use the primary/most central subject unless the user identifies another subject. If the subject's gender presentation is unclear, state the uncertainty briefly and choose the closest template.
+If an image contains multiple people, use the primary or most central subject unless the user identifies another one. If gender presentation is unclear, state the uncertainty briefly and choose the closest template.
 
-## Output Defaults
+## Output Contract
 
-- Pose image format: transparent-background `.png`.
-- Pose image size: `1024x1024`.
-- Framing: full body, with no cropped head, hands, feet, limbs, or props.
-- Model style: clean white model silhouette only, with a slightly strengthened contour for reliable cutout and readability.
-- Also output concise bilingual pose descriptions suitable for AIGC image-generation prompts, with both Chinese and English versions.
-- When processing an image that has a source file path, save all output files in that source image's directory. Use the source image stem plus `-posture` for the output basename, such as `source-dir/example-posture.png` and `source-dir/example-posture.md`.
-- For every saved pose PNG, also save a sibling Markdown file with the same basename and `.md` extension, containing the bilingual pose prompt block.
-- If the input is an uploaded attachment without an accessible source file path, save outputs under `posture/` in the current working directory.
+- Final pose image: `1024x1024` transparent-background `RGBA` PNG.
+- Final image content: one clean full-body white model, no cropped head, hands, feet, limbs, or props.
+- Prompt file: sibling Markdown file with the same basename, containing only the bilingual pose prompt block unless the user asks for extra notes.
+- For source file paths, save outputs beside each source image as `<input-stem>-posture.png` and `<input-stem>-posture.md`; if needed, use a non-destructive suffix such as `<input-stem>-posture-2`.
+- For uploaded attachments without an accessible source path, save outputs under `posture/` in the current working directory.
+- For multiple inputs, process independently and keep output order aligned with input order.
 
 ## Workflow
 
-1. Resolve reference image(s):
-   - If the user uploaded one or more images, use those images directly.
-   - If the user provided `/posture-extractor path/to/image`, resolve and load the provided path(s).
-   - If a provided path is a directory, collect all supported image files inside it and ask for confirmation before processing.
-   - If both uploaded images and paths are present, use uploaded images unless the user explicitly says to use the paths too.
-2. Use an image generation or image editing tool that can use both the selected white-model template and the user reference image as visual inputs. This is required, not optional. A tool is available if it can use visible conversation images, uploaded attachments, local image paths, or explicit image inputs as visual context; it does not need to be exposed as a shell API key or a file-path-returning API. For Codex, the built-in conversation image generation/editing capability is a valid generation channel when it can see or use the reference image and selected template, even if the tool call itself returns an image in the conversation before it is exported to a local file. If no image generation or image editing capability of any kind is available in the current environment, stop and tell the user the pose image cannot be generated reliably in this session; still provide the bilingual pose description if useful.
-3. Do not replace the generation/editing step with a local drawing script, SVG, canvas, vector tracing, skeleton overlay, or hand-built geometric mannequin. Programmatic drawing tools may only be used for post-processing, background removal, alpha validation, file conversion, or diagnostics after a template-preserving generation/edit has already produced the posed mannequin.
-4. Do not request native alpha, transparent background, or checkerboard transparency from the generation model. Generate a normal `1024x1024` image first, using a flat, single-color, high-saturation background with strong color contrast against the white mannequin, such as bright green or bright blue. Avoid white, off-white, gray, beige, low-saturation colors, gradients, shadows, textures, scenery, transparency previews, and checkerboard backgrounds. Slightly strengthen the mannequin's readable contour with a thin, soft, neutral gray edge or shading transition so the body boundary remains easy to separate from the solid background; avoid a thick black, cartoon, inked, or decorative outline.
-5. If there are multiple reference images, process each image independently and preserve input order in outputs and prompt descriptions.
-6. Inspect the current reference image.
-7. Identify the subject's apparent gender presentation for template selection:
-   - Male subject: use `template/male.png`.
-   - Female subject: use `template/female.png`.
-8. Extract only the body pose:
-   - overall stance or seated/lying position
-   - head direction and tilt
-   - spine/torso angle
-   - shoulder and hip rotation
-   - arm, hand, leg, and foot placement
-   - weight distribution and gesture energy
-9. Generate or edit the selected white model template so it matches the reference pose on the removable high-contrast solid-color background.
-10. Post-process the generated image by removing the solid high-contrast background, using background removal, chroma-key removal, matting, or local cutout tools. Remove visible color spill from the solid background, preserve the strengthened white-model contour, and anti-alias the alpha edge so the final silhouette is smooth rather than jagged. When using local cutout tools, prefer high-resolution or supersampled matting, then downsample cleanly to `1024x1024`. Do not build or infer a checkerboard background model as a workaround; if the generated image contains a baked checkerboard or transparency preview, discard it and regenerate with an explicit solid high-contrast background. If the generation tool returns only an in-conversation image at first, use any available export, cache, attachment, download, or file-save mechanism to obtain a local raster file before running cutout and validation. Export the result as a transparent PNG at `1024x1024`.
-11. Validate the cutout PNG before delivery:
-   - The file must be a real `RGBA` PNG, not `RGB`.
-   - The alpha channel must contain transparent pixels outside the mannequin.
-   - The mannequin edge should be smooth and anti-aliased, with no stair-step jaggies, harsh halo, or bright green/blue color fringe.
-   - A checkerboard transparency preview, solid color background, or any visible background is invalid.
-   - The mannequin must still visibly preserve the selected template's body proportions, material, light/shadow character, smooth body volumes, and white-model style.
-   - A geometric pose diagram, ball-joint stick figure, polygon body, manually drawn mannequin, or skeleton-like illustration is invalid even if its PNG mode, alpha channel, size, and anti-aliasing pass technical checks.
-12. If cutout validation fails because the solid-color removal was imperfect, retry the post-processing step first. If the source image used a checkerboard, transparency preview, gradient, texture, or non-solid background, do not attempt a checkerboard-removal workaround; regenerate on a flat high-contrast solid color instead.
-13. If template-preservation validation fails, discard the image and regenerate from the selected template and reference image. Do not repair a non-template geometric drawing into a final output.
-14. If post-processing repeatedly creates messy edges, stair-step jaggies, color fringe, missing body parts, or altered mannequin appearance, first retry matting with edge smoothing, decontamination, and a small alpha feather. If the edge still fails, regenerate the source image with a cleaner solid-color background that is farther from the mannequin's white/gray tones and a clearer but still subtle contour, then cut it out again.
-15. Choose the output directory:
-   - For a source image loaded from a file path, use that source image's directory.
-   - For an uploaded attachment without an accessible source file path, create and use `posture/` in the current working directory.
-16. Compose the bilingual pose prompt text in the required format below.
-17. Save the validated PNG and Markdown prompt file together in the chosen output directory, using the same output basename and the extensions `.png` and `.md`. For a source file `source-dir/example.jpg`, save `source-dir/example-posture.png` and `source-dir/example-posture.md`. If a filename already exists, create a non-destructive sibling basename such as `example-posture-2`. If a valid image was generated in the conversation but the environment provides no way to export or access that generated raster as a local file, do not fabricate a local PNG with drawing code. Send the generated image, save the Markdown prompt file if possible, and clearly state that local PNG saving and alpha validation could not be completed because the generated raster was not file-accessible.
-18. Send the validated generated pose image to the conversation.
-19. Tell the user that both files have been saved, replacing `<path/to/image>` and `<path/to/prompt.md>` with the actual paths and using the current conversation language.
-20. Provide the same bilingual pose prompt text in the conversation.
+1. Resolve the reference image(s). If both uploads and paths are present, use uploads unless the user explicitly asks to use the paths too.
+2. Select `template/male.png` or `template/female.png` from the subject's apparent gender presentation.
+3. Extract only pose mechanics: stance or seated/lying position, head direction and tilt, torso angle, shoulder and hip rotation, arm/hand placement, leg/foot placement, weight distribution, and gesture energy.
+4. Generate or edit the selected template so it matches the reference pose. Use a valid image generation or editing tool as defined below; do not draw the model manually.
+5. Generate on a flat, high-saturation solid background such as bright green or bright blue. Do not request native alpha, transparent background, checkerboard transparency, or transparency previews.
+6. Remove the solid background with background removal, chroma key, matting, or local cutout tools. Use edge smoothing and color-spill cleanup; export the final PNG at `1024x1024`.
+7. Validate the PNG against the checks below. Retry post-processing first for cutout failures; regenerate only when the source image or template preservation is invalid.
+8. Write the sibling Markdown prompt file using the exact bilingual block format below.
+9. Send the generated pose image to the conversation, report the PNG and Markdown paths when available, and provide the same bilingual pose prompt text. If local PNG saving was not possible, say so explicitly.
+
+## Valid Generation Channels
+
+The generation/editing step is required. A valid tool can use both the selected white-model template and the user reference image as visual context through explicit image inputs, local image paths, uploaded attachments, or visible conversation images.
+
+For Codex, the built-in conversation image generation/editing capability is valid when it can see or use the reference image and selected template. Do not refuse just because there is no shell API key or the tool does not immediately return a local file path.
+
+If the generation tool first returns only an in-conversation image, use any available export, cache, attachment, download, or file-save mechanism to obtain a local raster file before cutout and validation. If no local raster can be accessed after a valid image is generated, do not fabricate a PNG with drawing code; send the generated image, save the Markdown file if possible, and clearly state that local PNG saving and alpha validation could not be completed.
+
+If no image generation or editing capability of any kind is available, stop and tell the user the pose image cannot be generated reliably in this session. You may still provide the bilingual pose description if useful.
+
+## Prohibited Fallbacks
+
+Do not replace generation/editing with a local drawing script, SVG, canvas, vector tracing, skeleton overlay, geometric mannequin, or hand-built figure made from polygons, ellipses, lines, or limb shapes.
+
+Programmatic tools may only be used after template-preserving image generation/editing has produced the posed mannequin, and only for post-processing, background removal, alpha validation, file conversion, or diagnostics.
+
+## Generation Rules
+
+- Preserve the selected template's body proportions, including shoulder width, waist-to-hip ratio, torso length, arm length, leg length, hand/foot scale, and overall build.
+- Preserve the template's white material, lighting, smooth body volumes, and light/shadow character.
+- Transfer only the pose and gesture. Do not copy clothing, hair, accessories, props, facial likeness, physique, scenery, text, watermark, or background details.
+- Keep the full body visible with enough canvas margin so no body part touches or crosses the image edge.
+- Use one removable, flat, high-saturation solid background with strong contrast against the white mannequin. Avoid white, off-white, gray, beige, low-saturation colors, gradients, shadows, textures, scenery, transparency previews, and checkerboards.
+- A thin, soft, neutral-gray contour or edge shading is allowed only to improve silhouette separation. Do not use thick black, cartoon, inked, or decorative outlines.
+- If the generated image contains a baked checkerboard, transparency preview, gradient, texture, or non-solid background, discard it and regenerate on a clean solid background. Do not attempt checkerboard-removal as a workaround.
+
+## Validation Checks
+
+Before delivery, verify:
+
+- The file is a real `RGBA` PNG, not `RGB`.
+- The alpha channel contains transparent pixels outside the mannequin.
+- The silhouette edge is smooth and anti-aliased, without stair-step jaggies, harsh halos, or green/blue fringe.
+- No visible background, solid color, or checkerboard preview remains.
+- The mannequin still visibly preserves the selected template's proportions, material, lighting, and white-model style.
+- The result is not a geometric pose diagram, ball-joint figure, polygon body, manually drawn mannequin, or skeleton-like illustration.
+
+Technical validity such as `RGBA`, `1024x1024`, transparency, and anti-aliasing is necessary but not sufficient. Template identity and visual fidelity are required.
 
 ## Batch Processing
 
-Batch processing is allowed when the user uploads multiple images or provides a path that resolves to multiple images.
+Batch processing is allowed for multiple uploads or a path that resolves to multiple images.
 
-Before processing images discovered from a directory path, ask the user for confirmation. The confirmation message should include the directory path, the number of supported image files found, and the file list or a concise preview of the file list. Do not start generation for directory-based batches until the user confirms.
+For directory paths, ask for confirmation before generating. Include the directory path, the number of supported images found, and the file list or a concise preview.
 
-For multiple uploaded image attachments, confirmation is not required unless the user asks to review the list first.
+For multiple uploaded attachments, confirmation is not required unless the user asks to review the list first.
 
-During batch processing, report progress before starting each image. Use the current conversation language and include the current index and total count, equivalent to: `Processing image 1/n...`.
-
-For batch inputs loaded from file paths, save each PNG and Markdown prompt file in the same directory as its own source image, not in a shared output directory. Use stable filenames derived from each input filename, such as `<input-stem>-posture.png`. If a filename already exists, create a non-destructive sibling filename such as `<input-stem>-posture-2.png`.
-
-For batch inputs that are uploaded attachments without accessible source file paths, save outputs under `posture/` in the current working directory.
-
-For every batch PNG, save its bilingual prompt Markdown file beside it using the same selected basename, such as `<input-stem>-posture.md` or `<input-stem>-posture-2.md`. Keep each Markdown file paired with exactly one PNG.
-
-For each processed image, send or summarize the generated pose image, report both the PNG path and Markdown prompt path, and provide its bilingual pose prompt text. Keep the output order aligned with the input order.
-
-## Image Generation Constraints
-
-Preserve the selected white model's existing material, light, shadow, and color. A subtle neutral-gray contour or edge shading is allowed only to improve silhouette separation and cutout accuracy. Do not add texture, skin tone, clothing, hair, facial details, accessories, props, background elements, floor, scenery, text, watermark, or decorative effects.
-
-Do not modify the selected template's body proportions based on the uploaded image. Preserve the template's original shoulder width, waist-to-hip ratio, torso length, arm length, leg length, hand/foot scale, and overall body build. Transfer only the pose and gesture, not the reference subject's physique.
-
-The output must be only a clean full-body white model in the extracted pose, isolated on a transparent background. Keep the silhouette readable, gently contoured, and anatomical proportions coherent. Leave enough canvas margin around the body so no body part touches or crosses the image edge.
-
-The transparent background must be real file transparency in the final delivered file. The delivered PNG must contain an alpha channel with transparent pixels outside the mannequin. Its alpha edge should be smooth and anti-aliased, without hard stair-step pixels, obvious halos, or high-saturation color fringe from the temporary background. Do not draw, simulate, request, bake in, or post-process from a checkerboard transparency preview.
-
-Native transparent output is not the default strategy. Generate the posed white model on a removable flat solid-color background first, choosing a high-saturation color with large visual distance from the mannequin's white/gray tones, then cut out that solid color in post-processing. Checkerboard-model removal is not an acceptable substitute for solid-color generation. The final file must pass the same `RGBA`, alpha transparency, smooth anti-aliased edge, clean contour, full-body, and template-preservation checks before delivery.
-
-The final image must be derived from the selected template through image generation or image editing. A locally scripted approximation is a failed output, not an acceptable fallback. Technical validity checks such as `RGBA`, `1024x1024`, transparent pixels, and anti-aliased edges are necessary but not sufficient; template identity and visual fidelity are required.
+During batch processing, report progress before starting each image, for example: `Processing image 1/n...`.
 
 ## Prompt Pattern
 
-When calling an image generation or image editing model, include the user image as the pose reference and the selected template as the identity/style reference. If the tool supports explicit image arguments, attach both images. If the tool uses the current conversation's visible images or attachments instead of explicit image arguments, first make sure both the reference image and the selected template are present in the conversation context, then call the tool with a prompt that names their roles. Do not refuse just because the tool is not exposed through a shell API key or does not return an immediate local file path.
+When calling an image generation or editing model, include the user image as the pose reference and the selected template as the identity/style reference. If the tool supports explicit image arguments, attach both images. If the tool uses conversation context instead, make sure both images are visible or attached before calling the tool, and name their roles in the prompt.
 
 Use a prompt like:
 
 ```text
-Create a 1024x1024 image showing the [male/female] white mannequin from the provided template matching only the body pose of the reference subject. Do not generate native alpha, transparent background, checkerboard transparency, or any transparency preview. Place the mannequin on one flat, solid, high-saturation background color with strong contrast against the white mannequin, such as bright green or bright blue, so that single color can be removed precisely in post-processing. The background must not be white, off-white, gray, beige, low-saturation, gradient, shadowed, textured, scenic, transparent, or checkerboard. Preserve the mannequin's original body proportions, including shoulder width, waist-to-hip ratio, torso length, arm length, leg length, and overall build. Preserve the mannequin's original white material, lighting, and color. Slightly strengthen the mannequin's outer silhouette and major limb separation contours with thin, soft, neutral-gray edge shading; keep it realistic and minimal, not a thick black cartoon or ink outline. Full body visible, no cropped head, hands, feet, or limbs. Do not copy clothing, hair, accessories, facial details, physique, props, scenery, text, or any unrelated detail. Output only the posed white model on the removable solid-color background; the background will be cut out after generation.
+Create a 1024x1024 image showing the [male/female] white mannequin from the provided template matching only the body pose of the reference subject. Do not generate native alpha, transparent background, checkerboard transparency, or any transparency preview. Place the mannequin on one flat, solid, high-saturation background color with strong contrast against the white mannequin, such as bright green or bright blue, so that single color can be removed precisely in post-processing. Preserve the mannequin's original body proportions, white material, lighting, and overall build. Slightly strengthen the outer silhouette and major limb separation contours with thin, soft, neutral-gray edge shading; keep it realistic and minimal. Full body visible, no cropped head, hands, feet, or limbs. Do not copy clothing, hair, accessories, facial details, physique, props, scenery, text, or any unrelated detail. Output only the posed white model on the removable solid-color background; the background will be cut out after generation.
 ```
 
 ## AIGC Pose Description
 
-Return short prompt-friendly descriptions after the PNG and sibling Markdown prompt file have been saved in the selected output directory and the user has been told where both files were saved. Focus on pose mechanics rather than character identity or styling.
+Return short prompt-friendly descriptions after the PNG and sibling Markdown prompt file have been saved, or after explaining why local PNG saving was not possible. Focus on pose mechanics rather than character identity or styling.
 
-Write the same bilingual prompt block to the sibling `.md` file. The Markdown file should contain only the prompt block below, unless the user explicitly asks for extra notes.
+The user-facing pose prompt describes the pose only. Do not frame it as a prompt to generate another white model, mannequin, male/female template, or character identity. Do not start the Chinese description with labels that mean "full-body female white mannequin pose", "full-body male white mannequin pose", or similar white-model wording. Do not start the English description with labels like `Full-body female white mannequin pose:` or `Full-body male white mannequin pose:`.
 
-The user-facing pose prompt describes the pose only. Do not frame it as a prompt to generate another white model, mannequin, male/female template, or character identity. Do not start the Chinese description with labels like `全身女性白模姿势：`, `全身男性白模姿势：`, or similar white-model wording. Do not start the English description with labels like `Full-body female white mannequin pose:` or `Full-body male white mannequin pose:`.
-
-The pose prompt output must be bilingual. Always provide both Chinese and English versions, regardless of the current conversation language. Keep the two versions semantically aligned and equally complete. Use the current conversation language for any surrounding delivery text, but keep this prompt block structure:
+Always provide semantically aligned Chinese and English versions. Use the current conversation language for surrounding delivery text, but keep this prompt block structure:
 
 ```text
 可用于图片生成的提示词：
-<Chinese pose description>
+<中文姿态描述>
 
 关键词：
-<Chinese keyword 1>, <Chinese keyword 2>, <Chinese keyword n>
+<中文关键词 1>, <中文关键词 2>, <中文关键词 n>
 
 Image-generation prompt:
 <English pose description>
@@ -145,10 +126,6 @@ Keywords:
 
 Avoid mentioning clothing, hairstyle, facial likeness, accessories, background, or any visual detail that should not transfer.
 
-For both `<Chinese pose description>` and `<English pose description>`, describe the pose in one compact paragraph, such as:
+Describe the pose in one compact paragraph per language, using details such as stance/action, head direction, torso angle, arm placement, leg placement, support point, balance, and gesture energy.
 
-```text
-[stance/action], head [direction/tilt], torso [angle/rotation], left arm [position], right arm [position], left leg [position], right leg [position], weight balanced on [support point], [gesture mood/energy].
-```
-
-For each keyword line, provide concise pose keywords only, such as action type, body orientation, arm placement, leg placement, balance, and gesture energy. The Chinese keywords and English keywords should describe the same pose mechanics.
+For each keyword line, provide concise pose keywords only. The Chinese and English keywords should describe the same pose mechanics.

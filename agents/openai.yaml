@@ -1,5 +1,5 @@
 interface:
-  display_name: "姿态提取器"
+  display_name: "Posture Extractor"
   short_description: "Extract posture into transparent PNGs with bilingual prompt files"
   default_prompt: "Use $posture-extractor to extract the posture from this reference image. Use the available built-in image generation/editing capability when needed, create a cutout transparent white-model posture PNG, and save a bilingual prompt Markdown file in the same directory."
 
