@@ -30,7 +30,9 @@ If an image contains multiple people, use the primary/most central subject unles
 - Framing: full body, with no cropped head, hands, feet, limbs, or props.
 - Model style: clean white model silhouette only, with a slightly strengthened contour for reliable cutout and readability.
 - Also output concise bilingual pose descriptions suitable for AIGC image-generation prompts, with both Chinese and English versions.
-- For every saved pose PNG, also save a sibling Markdown file in the same directory with the same basename and `.md` extension, containing the bilingual pose prompt block.
+- When processing an image that has a source file path, save all output files in that source image's directory. Use the source image stem plus `-posture` for the output basename, such as `source-dir/example-posture.png` and `source-dir/example-posture.md`.
+- For every saved pose PNG, also save a sibling Markdown file with the same basename and `.md` extension, containing the bilingual pose prompt block.
+- If the input is an uploaded attachment without an accessible source file path, save outputs under `posture/` in the current working directory.
 
 ## Workflow
 
@@ -61,9 +63,11 @@ If an image contains multiple people, use the primary/most central subject unles
    - A checkerboard transparency preview, solid color background, or any visible background is invalid.
 10. If cutout validation fails, retry the post-processing step first.
 11. If post-processing repeatedly creates messy edges, stair-step jaggies, color fringe, missing body parts, or altered mannequin appearance, first retry matting with edge smoothing, decontamination, and a small alpha feather. If the edge still fails, regenerate the source image with a cleaner solid-color background that is farther from the mannequin's white/gray tones and a clearer but still subtle contour, then cut it out again.
-12. Create `posture/` in the current working directory and save the validated PNG there.
+12. Choose the output directory:
+   - For a source image loaded from a file path, use that source image's directory.
+   - For an uploaded attachment without an accessible source file path, create and use `posture/` in the current working directory.
 13. Compose the bilingual pose prompt text in the required format below.
-14. Save the prompt text as a Markdown file next to the PNG, using the same basename and `.md` extension. For example, if the image is `posture/example-posture.png`, save the prompt file as `posture/example-posture.md`.
+14. Save the validated PNG and Markdown prompt file together in the chosen output directory, using the same output basename and the extensions `.png` and `.md`. For a source file `source-dir/example.jpg`, save `source-dir/example-posture.png` and `source-dir/example-posture.md`. If a filename already exists, create a non-destructive sibling basename such as `example-posture-2`.
 15. Send the validated generated pose image to the conversation.
 16. Tell the user that both files have been saved, replacing `<path/to/image>` and `<path/to/prompt.md>` with the actual paths and using the current conversation language.
 17. Provide the same bilingual pose prompt text in the conversation.
@@ -78,7 +82,9 @@ For multiple uploaded image attachments, confirmation is not required unless the
 
 During batch processing, report progress before starting each image. Use the current conversation language and include the current index and total count, equivalent to: `Processing image 1/n...`.
 
-Save every batch output under `posture/`. Use stable filenames derived from each input filename, such as `<input-stem>-posture.png`. If a filename already exists, create a non-destructive sibling filename such as `<input-stem>-posture-2.png`.
+For batch inputs loaded from file paths, save each PNG and Markdown prompt file in the same directory as its own source image, not in a shared output directory. Use stable filenames derived from each input filename, such as `<input-stem>-posture.png`. If a filename already exists, create a non-destructive sibling filename such as `<input-stem>-posture-2.png`.
+
+For batch inputs that are uploaded attachments without accessible source file paths, save outputs under `posture/` in the current working directory.
 
 For every batch PNG, save its bilingual prompt Markdown file beside it using the same selected basename, such as `<input-stem>-posture.md` or `<input-stem>-posture-2.md`. Keep each Markdown file paired with exactly one PNG.
 
@@ -106,7 +112,7 @@ Create a 1024x1024 image showing the [male/female] white mannequin from the prov
 
 ## AIGC Pose Description
 
-Return short prompt-friendly descriptions after the PNG and sibling Markdown prompt file have been saved under `posture/` and the user has been told where both files were saved. Focus on pose mechanics rather than character identity or styling.
+Return short prompt-friendly descriptions after the PNG and sibling Markdown prompt file have been saved in the selected output directory and the user has been told where both files were saved. Focus on pose mechanics rather than character identity or styling.
 
 Write the same bilingual prompt block to the sibling `.md` file. The Markdown file should contain only the prompt block below, unless the user explicitly asks for extra notes.
 
