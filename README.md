@@ -25,6 +25,10 @@ $posture-generator path/to/image
 /posture-generator path/to/image
 ```
 
+## Sample
+
+![Posture Generator sample](Sample.jpg)
+
 ## Installation
 
 Send this to an agent that can install local skills:
@@ -61,6 +65,10 @@ template/
 $posture-generator path/to/image
 /posture-generator path/to/image
 ```
+
+## 示例
+
+![姿势生成器示例](Sample.jpg)
 
 ## 安装
 
