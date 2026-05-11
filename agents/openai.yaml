@@ -1,7 +1,7 @@
 interface:
-  display_name: "Posture Generator"
-  short_description: "Generate pose PNGs with bilingual prompt files"
-  default_prompt: "Use $posture-generator to create a cutout transparent white-model pose PNG and bilingual prompt Markdown file in the same directory as this reference image."
+  display_name: "姿态提取器"
+  short_description: "Extract posture into transparent PNGs with bilingual prompt files"
+  default_prompt: "Use $posture-extractor to extract the posture from this reference image, create a cutout transparent white-model posture PNG, and save a bilingual prompt Markdown file in the same directory."
 
 policy:
   allow_implicit_invocation: true
