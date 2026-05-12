@@ -25,7 +25,8 @@ If an image contains multiple people, use the primary or most central subject un
 ## Output Contract
 
 - Final pose image: `1024x1024` transparent-background `RGBA` PNG.
-- Final image content: one clean full-body white model, no cropped head, hands, feet, limbs, or props.
+- Final image content: one clean full-body white model, no cropped head, hands, feet, limbs, props, or facial features.
+- Final head/face style: a smooth featureless white-model head. Do not include recognizable facial features or expression details such as eyes, pupils, eyelashes, eyebrows, nose, nostrils, mouth, lips, teeth, tongue, ears with inner detail, wrinkles, makeup, or face markings. Preserve only head direction and tilt.
 - Final response images: only the validated transparent-background cutout PNG(s). Do not attach, display, or present the original reference image, template image, solid-background generation, uncut `RGB` image, checkerboard preview, or any other intermediate image as a delivered output unless the user explicitly asks for diagnostic artifacts.
 - Prompt file: sibling Markdown file with the same basename, containing only the bilingual pose prompt block unless the user asks for extra notes.
 - For source file paths, save outputs beside each source image as `<input-stem>-posture.png` and `<input-stem>-posture.md`; if needed, use a non-destructive suffix such as `<input-stem>-posture-2`.
@@ -64,7 +65,8 @@ Programmatic tools may only be used after template-preserving image generation/e
 
 - Preserve the selected template's body proportions, including shoulder width, waist-to-hip ratio, torso length, arm length, leg length, hand/foot scale, and overall build.
 - Preserve the template's white material, lighting, smooth body volumes, and light/shadow character.
-- Transfer only the pose and gesture. Do not copy clothing, hair, accessories, props, facial likeness, physique, scenery, text, watermark, or background details.
+- Transfer only the pose and gesture. Do not copy clothing, hair, accessories, props, facial likeness, facial features, expression, physique, scenery, text, watermark, or background details.
+- Keep the head smooth and featureless. Facial anatomy or expression details are invalid even if they are generic and not copied from the reference.
 - Keep the full body visible with enough canvas margin so no body part touches or crosses the image edge.
 - Use one removable, flat, high-saturation solid background with strong contrast against the white mannequin. Avoid white, off-white, gray, beige, low-saturation colors, gradients, shadows, textures, scenery, transparency previews, and checkerboards.
 - A thin, soft, neutral-gray contour or edge shading is allowed only to improve silhouette separation. Do not use thick black, cartoon, inked, or decorative outlines.
@@ -79,6 +81,7 @@ Before delivery, verify:
 - The silhouette edge is smooth and anti-aliased, without stair-step jaggies, harsh halos, or green/blue fringe.
 - No visible background, solid color, or checkerboard preview remains.
 - The mannequin still visibly preserves the selected template's proportions, material, lighting, and white-model style.
+- The head is smooth and featureless, with no visible eyes, pupils, eyebrows, nose, nostrils, mouth, lips, teeth, eyelashes, makeup, face markings, or expression detail.
 - The result is not a geometric pose diagram, ball-joint figure, polygon body, manually drawn mannequin, or skeleton-like illustration.
 
 Technical validity such as `RGBA`, `1024x1024`, transparency, and anti-aliasing is necessary but not sufficient. Template identity and visual fidelity are required.
@@ -100,7 +103,7 @@ When calling an image generation or editing model, include the user image as the
 Use a prompt like:
 
 ```text
-Create a 1024x1024 image showing the [male/female] white mannequin from the provided template matching only the body pose of the reference subject. Do not generate native alpha, transparent background, checkerboard transparency, or any transparency preview. Place the mannequin on one flat, solid, high-saturation background color with strong contrast against the white mannequin, such as bright green or bright blue, so that single color can be removed precisely in post-processing. Preserve the mannequin's original body proportions, white material, lighting, and overall build. Slightly strengthen the outer silhouette and major limb separation contours with thin, soft, neutral-gray edge shading; keep it realistic and minimal. Full body visible, no cropped head, hands, feet, or limbs. Do not copy clothing, hair, accessories, facial details, physique, props, scenery, text, or any unrelated detail. Output only the posed white model on the removable solid-color background; the background will be cut out after generation.
+Create a 1024x1024 image showing the [male/female] white mannequin from the provided template matching only the body pose of the reference subject. Do not generate native alpha, transparent background, checkerboard transparency, or any transparency preview. Place the mannequin on one flat, solid, high-saturation background color with strong contrast against the white mannequin, such as bright green or bright blue, so that single color can be removed precisely in post-processing. Preserve the mannequin's original body proportions, white material, lighting, and overall build. Slightly strengthen the outer silhouette and major limb separation contours with thin, soft, neutral-gray edge shading; keep it realistic and minimal. Full body visible, no cropped head, hands, feet, or limbs. Keep the head smooth and featureless; do not include eyes, pupils, eyelashes, eyebrows, nose, nostrils, mouth, lips, teeth, ears with inner detail, makeup, face markings, facial expression, or any other facial detail. Do not copy clothing, hair, accessories, facial details, physique, props, scenery, text, or any unrelated detail. Output only the posed white model on the removable solid-color background; the background will be cut out after generation.
 ```
 
 ## AIGC Pose Description
