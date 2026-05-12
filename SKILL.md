@@ -24,11 +24,9 @@ If an image contains multiple people, use the primary or most central subject un
 
 ## Output Contract
 
-- Final pose image: `1024x1024` transparent-background `RGBA` PNG.
-- Final image content: one clean full-body white model, no cropped head, hands, feet, limbs, props, or facial features.
-- Final head/face style: a smooth featureless white-model head. Do not include recognizable facial features or expression details such as eyes, pupils, eyelashes, eyebrows, nose, nostrils, mouth, lips, teeth, tongue, ears with inner detail, wrinkles, makeup, or face markings. Preserve only head direction and tilt.
-- Final response images: only the validated transparent-background cutout PNG(s). Do not attach, display, or present the original reference image, template image, solid-background generation, uncut `RGB` image, checkerboard preview, or any other intermediate image as a delivered output unless the user explicitly asks for diagnostic artifacts.
-- Final local file gate: before giving a final answer, the target PNG path must exist on disk and pass the validation checks below. A conversation-visible generated image is not a saved PNG deliverable by itself.
+- Final pose image: target-path `1024x1024` transparent-background `RGBA` PNG that exists on disk and passes the validation checks below. A conversation-visible generated image is not a saved PNG deliverable by itself.
+- Final image content: one clean full-body white model with no cropped head, hands, feet, limbs, props, or facial features. The head must stay smooth and featureless; preserve only head direction and tilt.
+- Final response images: only the validated transparent cutout PNG(s). Do not attach, display, or present the original reference image, template image, solid-background generation, uncut `RGB` image, checkerboard preview, conversation-only image, or any other intermediate image unless the user explicitly asks for diagnostic artifacts.
 - Prompt file: sibling Markdown file with the same basename, containing only the bilingual pose prompt block unless the user asks for extra notes.
 - For source file paths, save outputs beside each source image as `<input-stem>-posture.png` and `<input-stem>-posture.md`; if needed, use a non-destructive suffix such as `<input-stem>-posture-2`.
 - For uploaded attachments without an accessible source path, save outputs under `posture/` in the current working directory.
@@ -40,7 +38,7 @@ If an image contains multiple people, use the primary or most central subject un
 2. Select `template/male.png` or `template/female.png` from the subject's apparent gender presentation.
 3. Extract only pose mechanics: stance or seated/lying position, head direction and tilt, torso angle, shoulder and hip rotation, arm/hand placement, leg/foot placement, weight distribution, and gesture energy.
 4. Generate or edit the selected template so it matches the reference pose. Use a valid image generation or editing tool as defined below; do not draw the model manually.
-5. Generate on a flat, high-saturation solid background such as bright green or bright blue. Do not request native alpha, transparent background, checkerboard transparency, or transparency previews.
+5. Generate on a flat, high-saturation solid chroma background such as bright green or bright blue. Do not request native alpha, transparent background, transparent-background PNG style, cutout-on-transparent style, checkerboard transparency, or transparency previews.
 6. If using Codex conversation image generation, locate the generated raster before post-processing. Check `$CODEX_HOME/generated_images/` if `CODEX_HOME` is set, otherwise check `~/.codex/generated_images/`; use the newest PNG created for the current generation, then copy it to a working path. Do not assume the conversation image has already been saved to the target output path.
 7. Remove the solid background with background removal, chroma key, matting, or local cutout tools. Use edge smoothing and color-spill cleanup; export the final PNG at `1024x1024`.
 8. Validate the PNG against the checks below. Treat any visible solid background, `RGB` mode output, missing alpha channel, uncut generation, or missing target file as a failed final image, not as an acceptable companion output. Retry post-processing first for cutout failures; regenerate only when the source image or template preservation is invalid.
@@ -80,6 +78,7 @@ Before delivery, verify:
 
 - The target sibling PNG exists on disk at the reported path.
 - The file is a real `RGBA` PNG, not `RGB`.
+- The image dimensions are exactly `1024x1024`.
 - The alpha channel contains transparent pixels outside the mannequin.
 - The silhouette edge is smooth and anti-aliased, without stair-step jaggies, harsh halos, or green/blue fringe.
 - No visible background, solid color, or checkerboard preview remains.
