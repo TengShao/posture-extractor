@@ -2,7 +2,7 @@
 
 [English](#posture-extractor) | [中文](#姿态提取器)
 
-Posture Extractor is an agent skill for creating clean white-model pose references from an uploaded character or person image. It extracts the subject's pose, applies it to a male or female white-model template, and outputs both a transparent PNG pose image and bilingual Chinese-English AIGC-ready pose descriptions. The workflow generates the posed white model on a high-contrast solid-color background first, with a subtly strengthened contour for cleaner separation, then removes the background as a post-processing step with smooth anti-aliased edges. It keeps only the subject's action and removes character-specific styling and scene details such as clothing, hair, accessories, props, backgrounds, and facial likeness.
+Posture Extractor is an agent skill for creating clean white-model pose references from an uploaded character or person image. It extracts the subject's pose, applies it to a male or female white-model template, and outputs both a transparent PNG pose image and bilingual Chinese-English AIGC-ready pose descriptions. The workflow generates the posed white model on a high-contrast solid-color background first, with a subtly strengthened contour for cleaner separation, then removes the background as a post-processing step with smooth anti-aliased edges. Only the validated transparent cutout PNG is a final image output; solid-background generations, uncut images, checkerboard previews, templates, and other intermediate images must not be delivered unless explicitly requested for diagnostics. It keeps only the subject's action and removes character-specific styling and scene details such as clothing, hair, accessories, props, backgrounds, and facial likeness.
 
 ## Templates
 
@@ -43,7 +43,7 @@ Install the skill from https://github.com/TengShao/posture-extractor and keep th
 
 [English](#posture-extractor) | [中文](#姿态提取器)
 
-姿态提取器是一个 agent skill，用于根据用户上传的人物或角色图片生成干净的白模姿态参考图。它会提取参考图中主体的姿态，应用到男性或女性白模模板上，并输出透明背景 PNG 姿态图和中英双语的 AIGC 图片生成动作描述。工作流会先生成带高色差纯色背景、轮廓线略微强化的白模姿态图，再通过带抗锯齿边缘处理的后处理抠图得到最终透明 PNG。它只保留主体动作，去掉服饰、头发、饰品、道具、背景、面部相似性等角色造型和场景细节。
+姿态提取器是一个 agent skill，用于根据用户上传的人物或角色图片生成干净的白模姿态参考图。它会提取参考图中主体的姿态，应用到男性或女性白模模板上，并输出透明背景 PNG 姿态图和中英双语的 AIGC 图片生成动作描述。工作流会先生成带高色差纯色背景、轮廓线略微强化的白模姿态图，再通过带抗锯齿边缘处理的后处理抠图得到最终透明 PNG。只有通过校验的透明抠图 PNG 才是最终图片输出；纯色背景生成图、未抠图图片、棋盘格预览、模板图和其他中间图片都不能交付，除非用户明确要求用于诊断。它只保留主体动作，去掉服饰、头发、饰品、道具、背景、面部相似性等角色造型和场景细节。
 
 ## 模板
 

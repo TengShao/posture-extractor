@@ -1,7 +1,7 @@
 interface:
   display_name: "Posture Extractor"
   short_description: "Extract posture into transparent PNGs with bilingual prompt files"
-  default_prompt: "Use $posture-extractor to extract the posture from this reference image. Use the available built-in image generation/editing capability when needed, create a cutout transparent white-model posture PNG, and save a bilingual prompt Markdown file in the same directory."
+  default_prompt: "Use $posture-extractor to extract the posture from this reference image. Use the available built-in image generation/editing capability when needed, create a validated cutout transparent white-model posture PNG, and save a bilingual prompt Markdown file in the same directory. Deliver only the final transparent cutout PNG; do not attach or present solid-background generations, uncut images, templates, checkerboard previews, or other intermediate images unless explicitly requested for diagnostics."
 
 policy:
   allow_implicit_invocation: true

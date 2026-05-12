@@ -26,6 +26,7 @@ If an image contains multiple people, use the primary or most central subject un
 
 - Final pose image: `1024x1024` transparent-background `RGBA` PNG.
 - Final image content: one clean full-body white model, no cropped head, hands, feet, limbs, or props.
+- Final response images: only the validated transparent-background cutout PNG(s). Do not attach, display, or present the original reference image, template image, solid-background generation, uncut `RGB` image, checkerboard preview, or any other intermediate image as a delivered output unless the user explicitly asks for diagnostic artifacts.
 - Prompt file: sibling Markdown file with the same basename, containing only the bilingual pose prompt block unless the user asks for extra notes.
 - For source file paths, save outputs beside each source image as `<input-stem>-posture.png` and `<input-stem>-posture.md`; if needed, use a non-destructive suffix such as `<input-stem>-posture-2`.
 - For uploaded attachments without an accessible source path, save outputs under `posture/` in the current working directory.
@@ -39,9 +40,9 @@ If an image contains multiple people, use the primary or most central subject un
 4. Generate or edit the selected template so it matches the reference pose. Use a valid image generation or editing tool as defined below; do not draw the model manually.
 5. Generate on a flat, high-saturation solid background such as bright green or bright blue. Do not request native alpha, transparent background, checkerboard transparency, or transparency previews.
 6. Remove the solid background with background removal, chroma key, matting, or local cutout tools. Use edge smoothing and color-spill cleanup; export the final PNG at `1024x1024`.
-7. Validate the PNG against the checks below. Retry post-processing first for cutout failures; regenerate only when the source image or template preservation is invalid.
+7. Validate the PNG against the checks below. Treat any visible solid background, `RGB` mode output, missing alpha channel, or uncut generation as a failed final image, not as an acceptable companion output. Retry post-processing first for cutout failures; regenerate only when the source image or template preservation is invalid.
 8. Write the sibling Markdown prompt file using the exact bilingual block format below.
-9. Send the generated pose image to the conversation, report the PNG and Markdown paths when available, and provide the same bilingual pose prompt text. If local PNG saving was not possible, say so explicitly.
+9. Send only the validated transparent cutout PNG to the conversation, report the PNG and Markdown paths when available, and provide the same bilingual pose prompt text. If local PNG saving was not possible, say so explicitly; do not send the uncut solid-background generation as a substitute unless there is no accessible local raster for cutout and validation, and label that limitation clearly.
 
 ## Valid Generation Channels
 
@@ -49,7 +50,7 @@ The generation/editing step is required. A valid tool can use both the selected 
 
 For Codex, the built-in conversation image generation/editing capability is valid when it can see or use the reference image and selected template. Do not refuse just because there is no shell API key or the tool does not immediately return a local file path.
 
-If the generation tool first returns only an in-conversation image, use any available export, cache, attachment, download, or file-save mechanism to obtain a local raster file before cutout and validation. If no local raster can be accessed after a valid image is generated, do not fabricate a PNG with drawing code; send the generated image, save the Markdown file if possible, and clearly state that local PNG saving and alpha validation could not be completed.
+If the generation tool first returns only an in-conversation image, use any available export, cache, attachment, download, or file-save mechanism to obtain a local raster file before cutout and validation. If no local raster can be accessed after a valid image is generated, do not fabricate a PNG with drawing code; send the generated image only as a clearly labeled unvalidated fallback, save the Markdown file if possible, and clearly state that local PNG saving, cutout, and alpha validation could not be completed.
 
 If no image generation or editing capability of any kind is available, stop and tell the user the pose image cannot be generated reliably in this session. You may still provide the bilingual pose description if useful.
 
