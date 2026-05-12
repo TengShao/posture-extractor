@@ -28,6 +28,7 @@ If an image contains multiple people, use the primary or most central subject un
 - Final image content: one clean full-body white model, no cropped head, hands, feet, limbs, props, or facial features.
 - Final head/face style: a smooth featureless white-model head. Do not include recognizable facial features or expression details such as eyes, pupils, eyelashes, eyebrows, nose, nostrils, mouth, lips, teeth, tongue, ears with inner detail, wrinkles, makeup, or face markings. Preserve only head direction and tilt.
 - Final response images: only the validated transparent-background cutout PNG(s). Do not attach, display, or present the original reference image, template image, solid-background generation, uncut `RGB` image, checkerboard preview, or any other intermediate image as a delivered output unless the user explicitly asks for diagnostic artifacts.
+- Final local file gate: before giving a final answer, the target PNG path must exist on disk and pass the validation checks below. A conversation-visible generated image is not a saved PNG deliverable by itself.
 - Prompt file: sibling Markdown file with the same basename, containing only the bilingual pose prompt block unless the user asks for extra notes.
 - For source file paths, save outputs beside each source image as `<input-stem>-posture.png` and `<input-stem>-posture.md`; if needed, use a non-destructive suffix such as `<input-stem>-posture-2`.
 - For uploaded attachments without an accessible source path, save outputs under `posture/` in the current working directory.
@@ -40,10 +41,11 @@ If an image contains multiple people, use the primary or most central subject un
 3. Extract only pose mechanics: stance or seated/lying position, head direction and tilt, torso angle, shoulder and hip rotation, arm/hand placement, leg/foot placement, weight distribution, and gesture energy.
 4. Generate or edit the selected template so it matches the reference pose. Use a valid image generation or editing tool as defined below; do not draw the model manually.
 5. Generate on a flat, high-saturation solid background such as bright green or bright blue. Do not request native alpha, transparent background, checkerboard transparency, or transparency previews.
-6. Remove the solid background with background removal, chroma key, matting, or local cutout tools. Use edge smoothing and color-spill cleanup; export the final PNG at `1024x1024`.
-7. Validate the PNG against the checks below. Treat any visible solid background, `RGB` mode output, missing alpha channel, or uncut generation as a failed final image, not as an acceptable companion output. Retry post-processing first for cutout failures; regenerate only when the source image or template preservation is invalid.
-8. Write the sibling Markdown prompt file using the exact bilingual block format below.
-9. Send only the validated transparent cutout PNG to the conversation, report the PNG and Markdown paths when available, and provide the same bilingual pose prompt text. If local PNG saving was not possible, say so explicitly; do not send the uncut solid-background generation as a substitute unless there is no accessible local raster for cutout and validation, and label that limitation clearly.
+6. If using Codex conversation image generation, locate the generated raster before post-processing. Check `$CODEX_HOME/generated_images/` if `CODEX_HOME` is set, otherwise check `~/.codex/generated_images/`; use the newest PNG created for the current generation, then copy it to a working path. Do not assume the conversation image has already been saved to the target output path.
+7. Remove the solid background with background removal, chroma key, matting, or local cutout tools. Use edge smoothing and color-spill cleanup; export the final PNG at `1024x1024`.
+8. Validate the PNG against the checks below. Treat any visible solid background, `RGB` mode output, missing alpha channel, uncut generation, or missing target file as a failed final image, not as an acceptable companion output. Retry post-processing first for cutout failures; regenerate only when the source image or template preservation is invalid.
+9. Write the sibling Markdown prompt file using the exact bilingual block format below.
+10. Send only the validated transparent cutout PNG to the conversation, report the PNG and Markdown paths when available, and provide the same bilingual pose prompt text. If the target PNG could not be created and validated, say so explicitly and do not present any image as the final PNG output.
 
 ## Valid Generation Channels
 
@@ -51,7 +53,7 @@ The generation/editing step is required. A valid tool can use both the selected 
 
 For Codex, the built-in conversation image generation/editing capability is valid when it can see or use the reference image and selected template. Do not refuse just because there is no shell API key or the tool does not immediately return a local file path.
 
-If the generation tool first returns only an in-conversation image, use any available export, cache, attachment, download, or file-save mechanism to obtain a local raster file before cutout and validation. If no local raster can be accessed after a valid image is generated, do not fabricate a PNG with drawing code; send the generated image only as a clearly labeled unvalidated fallback, save the Markdown file if possible, and clearly state that local PNG saving, cutout, and alpha validation could not be completed.
+If the generation tool first returns only an in-conversation image, use any available export, cache, attachment, download, file-save mechanism, or Codex generated-image cache to obtain a local raster file before cutout and validation. If no local raster can be accessed after a valid image is generated, do not fabricate a PNG with drawing code, do not send the generated image as an output substitute, and clearly state that local PNG saving, cutout, and alpha validation could not be completed.
 
 If no image generation or editing capability of any kind is available, stop and tell the user the pose image cannot be generated reliably in this session. You may still provide the bilingual pose description if useful.
 
@@ -68,7 +70,7 @@ Programmatic tools may only be used after template-preserving image generation/e
 - Transfer only the pose and gesture. Do not copy clothing, hair, accessories, props, facial likeness, facial features, expression, physique, scenery, text, watermark, or background details.
 - Keep the head smooth and featureless. Facial anatomy or expression details are invalid even if they are generic and not copied from the reference.
 - Keep the full body visible with enough canvas margin so no body part touches or crosses the image edge.
-- Use one removable, flat, high-saturation solid background with strong contrast against the white mannequin. Avoid white, off-white, gray, beige, low-saturation colors, gradients, shadows, textures, scenery, transparency previews, and checkerboards.
+- Use one removable, flat, high-saturation solid chroma background with strong contrast against the white mannequin. Avoid white, off-white, gray, beige, low-saturation colors, gradients, shadows, textures, scenery, transparency previews, alpha-style cutouts, and checkerboards.
 - A thin, soft, neutral-gray contour or edge shading is allowed only to improve silhouette separation. Do not use thick black, cartoon, inked, or decorative outlines.
 - If the generated image contains a baked checkerboard, transparency preview, gradient, texture, or non-solid background, discard it and regenerate on a clean solid background. Do not attempt checkerboard-removal as a workaround.
 
@@ -76,6 +78,7 @@ Programmatic tools may only be used after template-preserving image generation/e
 
 Before delivery, verify:
 
+- The target sibling PNG exists on disk at the reported path.
 - The file is a real `RGBA` PNG, not `RGB`.
 - The alpha channel contains transparent pixels outside the mannequin.
 - The silhouette edge is smooth and anti-aliased, without stair-step jaggies, harsh halos, or green/blue fringe.
@@ -103,7 +106,7 @@ When calling an image generation or editing model, include the user image as the
 Use a prompt like:
 
 ```text
-Create a 1024x1024 image showing the [male/female] white mannequin from the provided template matching only the body pose of the reference subject. Do not generate native alpha, transparent background, checkerboard transparency, or any transparency preview. Place the mannequin on one flat, solid, high-saturation background color with strong contrast against the white mannequin, such as bright green or bright blue, so that single color can be removed precisely in post-processing. Preserve the mannequin's original body proportions, white material, lighting, and overall build. Slightly strengthen the outer silhouette and major limb separation contours with thin, soft, neutral-gray edge shading; keep it realistic and minimal. Full body visible, no cropped head, hands, feet, or limbs. Keep the head smooth and featureless; do not include eyes, pupils, eyelashes, eyebrows, nose, nostrils, mouth, lips, teeth, ears with inner detail, makeup, face markings, facial expression, or any other facial detail. Do not copy clothing, hair, accessories, facial details, physique, props, scenery, text, or any unrelated detail. Output only the posed white model on the removable solid-color background; the background will be cut out after generation.
+Create a 1024x1024 image showing the [male/female] white mannequin from the provided template matching only the body pose of the reference subject. Do not generate native alpha, transparent background, transparent-background PNG style, cutout-on-transparent style, checkerboard transparency, or any transparency preview. Place the mannequin on one flat, solid, high-saturation chroma background color with strong contrast against the white mannequin, such as bright green or bright blue, so that single color can be removed precisely in post-processing. Preserve the mannequin's original body proportions, white material, lighting, and overall build. Slightly strengthen the outer silhouette and major limb separation contours with thin, soft, neutral-gray edge shading; keep it realistic and minimal. Full body visible, no cropped head, hands, feet, or limbs. Keep the head smooth and featureless; do not include eyes, pupils, eyelashes, eyebrows, nose, nostrils, mouth, lips, teeth, ears with inner detail, makeup, face markings, facial expression, or any other facial detail. Do not copy clothing, hair, accessories, facial details, physique, props, scenery, text, or any unrelated detail. Output only the posed white model on the removable solid-color chroma background; the background will be cut out after generation.
 ```
 
 ## AIGC Pose Description
