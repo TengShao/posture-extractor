@@ -20,6 +20,8 @@ template/
 
 Provide an image directly, or pass an image path when invoking the skill. Codex uses `$posture-extractor`; Openclaw, Hermes Agent, and Claude Code use `/posture-extractor`.
 
+Recommended: Codex GPT-5.5 high
+
 ```text
 $posture-extractor path/to/image
 /posture-extractor path/to/image
@@ -60,6 +62,8 @@ template/
 ## 使用方式
 
 可以直接上传图片，也可以在唤醒 skill 时传入图片路径。Codex 使用 `$posture-extractor`；Openclaw、Hermes Agent、Claude Code 使用 `/posture-extractor`。
+
+推荐使用：Codex GPT-5.5 high
 
 ```text
 $posture-extractor path/to/image
