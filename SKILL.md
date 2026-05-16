@@ -49,11 +49,11 @@ If an image contains multiple people, use the primary or most central subject un
 
 The generation/editing step is required. A valid tool can use both the selected white-model template and the user reference image as visual context through explicit image inputs, local image paths, uploaded attachments, or visible conversation images.
 
-For Codex, default to the built-in conversation image generation/editing capability first when it can see or use the reference image and selected template. Do not spend a preliminary step checking OpenAI CLI parameters, shell API availability, or `OPENAI_API_KEY` before the first Codex built-in image generation attempt. Do not refuse just because there is no shell API key or the tool does not immediately return a local file path.
+For Codex, the built-in conversation image generation/editing capability is valid when it can see or use the reference image and selected template. Do not refuse just because there is no shell API key or the tool does not immediately return a local file path.
 
 If the generation tool first returns only an in-conversation image, use any available export, cache, attachment, download, file-save mechanism, or Codex generated-image cache to obtain a local raster file before cutout and validation. If no local raster can be accessed after a valid image is generated, do not fabricate a PNG with drawing code, do not send the generated image as an output substitute, and clearly state that local PNG saving, cutout, and alpha validation could not be completed.
 
-Use CLI/API fallback only after the Codex built-in generation/editing path is unavailable, cannot access the required visual inputs, or has failed with repeated tool errors. If no image generation or editing capability of any kind is available, stop and tell the user the pose image cannot be generated reliably in this session. You may still provide the bilingual pose description if useful.
+If no image generation or editing capability of any kind is available, stop and tell the user the pose image cannot be generated reliably in this session. You may still provide the bilingual pose description if useful.
 
 ## Prohibited Fallbacks
 
