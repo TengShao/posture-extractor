@@ -1,0 +1,2 @@
+# Direct image API path.
+# The Gemini adapter uses only the Python standard library and GEMINI_API_KEY.

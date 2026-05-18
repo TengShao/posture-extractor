@@ -42,8 +42,9 @@ If an image contains multiple people, use the primary or most central subject un
 6. If using Codex conversation image generation, locate the generated raster before post-processing. Check `$CODEX_HOME/generated_images/` if `CODEX_HOME` is set, otherwise check `~/.codex/generated_images/`; use the newest PNG created for the current generation, then copy it to a working path. Do not assume the conversation image has already been saved to the target output path.
 7. Remove the solid background with background removal, chroma key, matting, or local cutout tools. Use edge smoothing and color-spill cleanup; export the final PNG at `1024x1024`.
 8. Validate the PNG against the checks below. Treat any visible solid background, `RGB` mode output, missing alpha channel, uncut generation, or missing target file as a failed final image, not as an acceptable companion output. Retry post-processing first for cutout failures; regenerate only when the source image or template preservation is invalid.
-9. Write the sibling Markdown prompt file using the exact bilingual block format below.
-10. Send only the validated transparent cutout PNG to the conversation, report the PNG and Markdown paths when available, and provide the same bilingual pose prompt text. If the target PNG could not be created and validated, say so explicitly and do not present any image as the final PNG output.
+9. If the default or built-in image generation path fails, cannot save a local raster, cannot use both the template and reference image as visual inputs, produces an invalid result, or the user says the result is unsatisfactory, ask whether to retry with a configured third-party image generation API backend. Do not call a paid or third-party API silently. If no backend credentials are configured, guide the user to configure one, such as setting `GEMINI_API_KEY` for the Gemini adapter.
+10. Write the sibling Markdown prompt file using the exact bilingual block format below.
+11. Send only the validated transparent cutout PNG to the conversation, report the PNG and Markdown paths when available, and provide the same bilingual pose prompt text. If the target PNG could not be created and validated, say so explicitly and do not present any image as the final PNG output.
 
 ## Valid Generation Channels
 
@@ -53,7 +54,9 @@ For Codex, the built-in conversation image generation/editing capability is vali
 
 If the generation tool first returns only an in-conversation image, use any available export, cache, attachment, download, file-save mechanism, or Codex generated-image cache to obtain a local raster file before cutout and validation. If no local raster can be accessed after a valid image is generated, do not fabricate a PNG with drawing code, do not send the generated image as an output substitute, and clearly state that local PNG saving, cutout, and alpha validation could not be completed.
 
-If no image generation or editing capability of any kind is available, stop and tell the user the pose image cannot be generated reliably in this session. You may still provide the bilingual pose description if useful.
+Third-party image generation API backends are opt-in fallback paths. Prefer the default built-in generation/editing capability first. If it fails or the user is not satisfied with the output quality, ask whether to use a third-party API backend. When the user agrees and the backend is configured, call the adapter explicitly. When the backend is not configured, explain the missing configuration and provide the minimal setup step. For Gemini, the repo-local adapter expects `GEMINI_API_KEY` in the environment and can be run through `scripts/image_to_image.py --backend gemini`.
+
+If no image generation or editing capability of any kind is available, or the user declines third-party API usage after the default path fails, stop and tell the user the pose image cannot be generated reliably in this session. You may still provide the bilingual pose description if useful.
 
 ## Prohibited Fallbacks
 
