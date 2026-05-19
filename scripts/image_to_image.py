@@ -47,8 +47,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--backend", default="gemini", choices=["gemini"])
     parser.add_argument("--template", required=True, type=Path, help="White-model template image path.")
     parser.add_argument("--reference", required=True, type=Path, help="Pose reference image path.")
-    parser.add_argument("--out", required=True, type=Path, help="Output raw backend image path.")
-    parser.add_argument("--response", type=Path, help="Optional path to save the full backend JSON response.")
+    parser.add_argument("--out", required=True, type=Path, help="Temporary raw backend image path. Use a scratch/temp location and delete it after final PNG post-processing.")
+    parser.add_argument("--response", type=Path, help="Optional diagnostic path for the full backend JSON response. Do not use for normal skill runs.")
     parser.add_argument("--prompt-file", type=Path, help="Optional prompt text file. Uses a built-in posture prompt if omitted.")
     parser.add_argument("--model", default="gemini-2.5-flash-image")
     parser.add_argument("--aspect-ratio", default="1:1", help="Gemini imageConfig.aspectRatio. Default: 1:1.")
@@ -59,4 +59,3 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
